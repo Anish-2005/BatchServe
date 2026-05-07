@@ -88,11 +88,25 @@ static void animate_service(int batch_id, int service_seconds) {
     pthread_mutex_unlock(&log_mutex);
 }
 
+static unsigned int xorshift32(unsigned int *state) {
+    unsigned int value = *state;
+
+    if (value == 0) {
+        value = 1;
+    }
+
+    value ^= value << 13;
+    value ^= value >> 17;
+    value ^= value << 5;
+    *state = value;
+    return value;
+}
+
 static int random_in_range(unsigned int *seed, int min_val, int max_val) {
     if (max_val <= min_val) {
         return min_val;
     }
-    return (rand_r(seed) % (max_val - min_val + 1)) + min_val;
+    return (int)(xorshift32(seed) % (unsigned int)(max_val - min_val + 1)) + min_val;
 }
 
 static void sleep_ms(int milliseconds) {
